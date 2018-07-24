@@ -1,3 +1,9 @@
+"""
+A terminal application for logging what work someone did on a certain day.
+The data is collected in a CSV document
+Author: Zachary Collins
+Date: July, 2018
+"""
 import csv
 
 import os
