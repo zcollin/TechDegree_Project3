@@ -10,6 +10,8 @@ import os
 
 import re
 
+import sys
+
 
 # Creates the csv file if it doesn't exist already
 try:
@@ -50,27 +52,39 @@ def run():
     elif answer == 'b':
         search()
     elif answer == 'c':
-        pass
+        exit()
 
 
 def add_entry():
     """Adds the entry to the CVS document"""
 
     clear_screen()
+
+    # Adds a valid Date
     date = input("Enter the Date \nPlease use MM/DD/YYYY: ")
+    date = "".join(re.findall(r'(\d{2}/\d{2}/\d{4})', date))
+    if len(date) == 0:
+        print("Must enter valid date")
+        input("Press ENTER to try again")
+        add_entry()
+
+    # Adds a valid title
     title = input("Enter the Title: ")
     if len(title) == 0:
         print("Must enter a Title")
         input("Press ENTER to try again")
         add_entry()
+
+    # Adds a valid amount of time
     try:
         time_spent = int(input("Enter the time spent (minutes): "))
     except ValueError:
         print("time spent must be a number")
         input("Press ENTER to try again")
         add_entry()
+
+    # Adds optional notes
     notes = input("Enter any additional notes (Optional): ")
-    clear_screen()
 
     with open("log.csv", "a") as csvfile:
         fieldnames = ['date', 'title', 'time spent', 'notes']
@@ -82,7 +96,7 @@ def add_entry():
             'notes': notes,
             })
 
-    input("Entry has been added. Press a key to return to menu. ")
+    input("\nEntry has been added. Press a key to return to menu. ")
     run()
 
 
@@ -120,6 +134,8 @@ def find_date():
     clear_screen()
     log = []
     dates = []
+
+    # Opens CSV and reads the full rows and dates
     with open('log.csv', newline='') as csvfile:
         line_reader = csv.reader(csvfile, delimiter='|')
         rows = list(line_reader)
@@ -129,6 +145,8 @@ def find_date():
             for element in row:
                 index = element.find(',')
                 dates.append(element[0:index])
+
+    # Prints the valid options and lets the user search
     print("The following are valid dates: ")
     for date in dates:
         print(date)
@@ -141,6 +159,8 @@ def find_date():
             counter += 1
     else:
         find_date()
+
+    # Provides a list for the user to search through
     answer = 'n'
     while answer != 'v':
         clear_screen()
@@ -170,6 +190,8 @@ def find_time():
     clear_screen()
     log = []
     times = []
+
+    # Opens CSV and reads the full rows and times
     with open('log.csv', newline='') as csvfile:
         line_reader = csv.reader(csvfile, delimiter='|')
         rows = list(line_reader)
@@ -181,6 +203,8 @@ def find_time():
                 comma2 = element.find(',', comma1 + 1)
                 comma3 = element.find(',', comma2 + 1)
                 times.append(element[comma2+1:comma3])
+
+    # Prints the valid options and lets the user search
     print("The following are valid times: ")
     for time in times:
         print(time + " minutes")
@@ -198,6 +222,7 @@ def find_time():
     if not found:
         find_time()
 
+    # Provides a list for the user to search through
     answer = 'n'
     while answer != 'v':
         clear_screen()
@@ -230,6 +255,8 @@ def find_exact():
     clear_screen()
     log = []
     title_notes = []
+
+    # Opens CSV and reads the full rows and times
     with open('log.csv', newline='') as csvfile:
         line_reader = csv.reader(csvfile, delimiter='|')
         rows = list(line_reader)
@@ -242,10 +269,18 @@ def find_exact():
                 comma3 = element.find(',', comma2 + 1)
                 title_notes.append(element[comma1+1:comma2] + " " +
                                    element[comma3+1:])
+
+    # Prints the valid options and lets the user search
     print("The following are valid title/notes: ")
     for entry in title_notes:
         print(entry)
     search = input("\nEnter the string to search for (Must be valid): ")
+    if len(search) == 0:
+        print("Please enter a search string")
+        input("Press ENTER to try again")
+        find_exact()
+
+    # Provides a list of entries containing the search
     found = []
     count = 0
     for row in title_notes:
@@ -272,6 +307,8 @@ def find_regex():
     clear_screen()
     log = []
     title_notes = []
+
+    # Opens CSV and reads the full rows and times
     with open('log.csv', newline='') as csvfile:
         line_reader = csv.reader(csvfile, delimiter='|')
         rows = list(line_reader)
@@ -285,6 +322,7 @@ def find_regex():
                 title_notes.append(element[comma1+1:comma2] + " " +
                                    element[comma3+1:])
 
+    # Lets the user search regex
     regex = input("Enter the desired Regular Expression to search for: ")
     count = 0
     found = []
@@ -295,13 +333,17 @@ def find_regex():
         count += 1
     counter = 1
     clear_screen()
+
+    # Provides a list of entries containing the Regex
     print(fields + "\n")
     for entry in found:
         print("Entry {}: {}".format(counter, log[entry]))
+        print("Regex Phrase: {}".format("".join(re.findall(r'{}'.format(regex),
+                                        log[entry]))))
         counter += 1
     if len(found) == 0:
         print("No enties were found with that Regular Expression")
-    input("Press a key to return to menu: ")
+    input("\nPress a key to return to menu: ")
     run()
 
 
